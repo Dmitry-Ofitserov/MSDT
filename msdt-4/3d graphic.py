@@ -1,9 +1,38 @@
 import math
+import logging
+import json
+import os
 
 import pygame
-
+from datetime import datetime
+from typing import List, Dict, Optional
 from pygame import font
 
+
+def setup_logging():
+    if not os.path.exists('log'):
+        os.makedirs('log')
+
+    logger = logging.getLogger('3d graphic manager')
+    logger.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    file_handler = logging.FileHandler('log/3d.log')
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+
+    return logger
+
+
+logger = setup_logging()
 pygame.init()
 font = pygame.font.SysFont("Arial", 24)
 width, height = 1200, 800
@@ -22,6 +51,7 @@ rotation_angle = [0, 0, 0]
 scale_factor = [1, 1, 1]
 grid_size = 10
 depth = 5
+logger.debug(f"Initial values: translation-{translation}, rotation_angle-{rotation_angle}, scale_factor-{scale_factor}")
 
 
 def drawings():
@@ -194,8 +224,8 @@ def rotate_z(x, y, z, angle):
 
 def draw_tree():
     scale = 50
-    N = 5
-    H = 20
+    N = 3
+    H = 5
     R = 2
     segments = 30  # Количество сегментов (чем больше, тем более гладким будет шар)
     for i in range(segments + 1):
@@ -209,6 +239,7 @@ def draw_tree():
             x = ((k*R*N) % R) * math.sin(alpha) * scale
             y = ((k*R*N) % R) * math.cos(alpha) * scale
             z = H * k * scale
+
             x, y, z = x * scale_factor[0], y * scale_factor[1], z * scale_factor[2]
             x, y, z = x + translation[0], y + translation[1], z + translation[2]
             x, y, z = rotate_x(x, y, z, rotation_angle[0])
@@ -216,7 +247,8 @@ def draw_tree():
             x, y, z = rotate_z(x, y, z, rotation_angle[2])
 
             x_2d, y_2d = project_to_2d_isometric(x, y, z)
-
+            if x_2d not in range(1201) or y_2d not in range(801):
+                logger.warning(f"coordinates {x_2d} {y_2d} are not inside window 1200x800")
             # Рисуем линии между точками, чтобы создать каркас шара
             if i < segments:
                 # Линия по вертикали (между сегментами вдоль оси theta)
@@ -230,6 +262,8 @@ def draw_tree():
                 x_next, y_next, z_next = rotate_y(x_next, y_next, z_next, rotation_angle[1])
                 x_next, y_next, z_next = rotate_z(x_next, y_next, z_next, rotation_angle[2])
                 x_2d_next, y_2d_next = project_to_2d_isometric(x_next, y_next, z_next)
+                if x_2d_next not in range(1201) or y_2d_next not in range(801):
+                    logger.warning(f"coordinates {x_2d_next} {y_2d_next} are not inside window 1200x800")
                 pygame.draw.line(screen, white, (x_2d, y_2d), (x_2d_next, y_2d_next))
 
             if K < segments*N:
@@ -243,6 +277,8 @@ def draw_tree():
                 x_next, y_next, z_next = rotate_y(x_next, y_next, z_next, rotation_angle[1])
                 x_next, y_next, z_next = rotate_z(x_next, y_next, z_next, rotation_angle[2])
                 x_2d_next, y_2d_next = project_to_2d_isometric(x_next, y_next, z_next)
+                if x_2d_next not in range(1201) or y_2d_next not in range(801):
+                    logger.warning(f"coordinates {x_2d_next} {y_2d_next} are not inside window 1200x800")
                 pygame.draw.line(screen, white, (x_2d, y_2d), (x_2d_next, y_2d_next))
 
 
@@ -271,42 +307,62 @@ while running:
             pygame.time.delay(10)
             if check_button_click(905, 400, 45, 45, mouse_pos):
                 translation[0] += 10
+                logger.info(f'increased translation along x-axis. New value-{translation[0]}')
             if check_button_click(955, 400, 45, 45, mouse_pos):
                 translation[0] -= 10
+                logger.info(f'decreased translation along x-axis. New value-{translation[0]}')
             if check_button_click(1005, 400, 45, 45, mouse_pos):
                 translation[1] += 10
+                logger.info(f'increased translation along y-axis. New value-{translation[1]}')
             if check_button_click(1055, 400, 45, 45, mouse_pos):
                 translation[1] -= 10
+                logger.info(f'decreased translation along y-axis. New value-{translation[1]}')
             if check_button_click(1105, 400, 45, 45, mouse_pos):
                 translation[2] += 10
+                logger.info(f'increased translation along z-axis. New value-{translation[2]}')
             if check_button_click(1155, 400, 45, 45, mouse_pos):
                 translation[2] -= 10
+                logger.info(f'decreased translation along x-axis. New value-{translation[2]}')
 
             if check_button_click(905, 460, 45, 45, mouse_pos):
                 rotation_angle[0] += 0.1
+                logger.info(f'increased rotation along x-axis. New value-{rotation_angle[0]}')
             if check_button_click(955, 460, 45, 45, mouse_pos):
                 rotation_angle[0] -= 0.1
+                logger.info(f'decreased rotation along x-axis. New value-{rotation_angle[0]}')
             if check_button_click(1005, 460, 45, 45, mouse_pos):
                 rotation_angle[1] += 0.1
+                logger.info(f'increased rotation along y-axis. New value-{rotation_angle[1]}')
             if check_button_click(1055, 460, 45, 45, mouse_pos):
                 rotation_angle[1] -= 0.1
+                logger.info(f'decreased rotation along y-axis. New value-{rotation_angle[1]}')
             if check_button_click(1105, 460, 45, 45, mouse_pos):
                 rotation_angle[2] += 0.1
+                logger.info(f'increased rotation along z-axis. New value-{rotation_angle[2]}')
             if check_button_click(1155, 460, 45, 45, mouse_pos):
                 rotation_angle[2] -= 0.1
+                logger.info(f'decreased rotation along z-axis. New value-{rotation_angle[2]}')
 
             if check_button_click(905, 520, 45, 45, mouse_pos):
                 scale_factor[0] += 0.1
+                logger.info(f'increased scale_factor along x-axis. New value-{scale_factor[0]}')
             if check_button_click(955, 520, 45, 45, mouse_pos):
                 scale_factor[0] -= 0.1
+                logger.info(f'decreased scale_factor along x-axis. New value-{scale_factor[0]}')
             if check_button_click(1005, 520, 45, 45, mouse_pos):
                 scale_factor[1] += 0.1
+                logger.info(f'increased scale_factor along y-axis. New value-{scale_factor[1]}')
             if check_button_click(1055, 520, 45, 45, mouse_pos):
                 scale_factor[1] -= 0.1
+                logger.info(f'decreased scale_factor along y-axis. New value-{scale_factor[1]}')
             if check_button_click(1105, 520, 45, 45, mouse_pos):
                 scale_factor[2] += 0.1
+                logger.info(f'increased scale_factor along z-axis. New value-{scale_factor[2]}')
             if check_button_click(1155, 520, 45, 45, mouse_pos):
                 scale_factor[2] -= 0.1
+                logger.info(f'decreased scale_factor along z-axis. New value-{scale_factor[2]}')
+            logger.debug(f"New values: translation-{translation}, "
+                         f"rotation_angle-{rotation_angle}, scale_factor-{scale_factor}")
     drawings()
     grid()
 
