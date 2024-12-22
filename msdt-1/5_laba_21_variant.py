@@ -75,13 +75,18 @@ def grid():
         for y in range(-grid_size, grid_size):
             for z in range(-depth):
                 # Координаты для точек в сетке
-                p1 = points[(x + grid_size) * (2 * grid_size + 1) * (depth + 1) +
+                p1 = points[(x + grid_size) * (2 * grid_size + 1) *
+                            (depth + 1) +
                             (y + grid_size) * (depth + 1) + (z + depth)]
-                p2 = points[(x + grid_size + 1) * (2 * grid_size + 1) * (depth + 1) +
+                p2 = points[(x + grid_size + 1) * (2 * grid_size + 1) *
+                            (depth + 1) +
                             (y + grid_size) * (depth + 1) + (z + depth)]
-                p3 = points[(x + grid_size) * (2 * grid_size + 1) * (depth + 1) +
-                            (y + grid_size + 1) * (depth + 1) + (z + depth)]
-                p4 = points[(x + grid_size) * (2 * grid_size + 1) * (depth + 1) +
+                p3 = points[(x + grid_size) * (2 * grid_size + 1) *
+                            (depth + 1) +
+                            (y + grid_size + 1) * (depth + 1) +
+                            (z + depth)]
+                p4 = points[(x + grid_size) * (2 * grid_size + 1) *
+                            (depth + 1) +
                             (y + grid_size) * (depth + 1) + (z + depth + 1)]
 
                 # Рисование линий
@@ -157,19 +162,22 @@ def draw_scale_marks(axis_end, axis, color):
         for i in range(1, steps):
             x_pos = start_x + (axis_end_x - start_x) / steps * i
             y_pos = start_y + (axis_end_y - start_y) / steps * i
-            pygame.draw.line(screen, color, (x_pos, y_pos-10), (x_pos, y_pos + 10), 2)
+            pygame.draw.line(screen, color, (x_pos, y_pos-10),
+                             (x_pos, y_pos + 10), 2)
             draw_text((x_pos, y_pos), str(i), color)
     elif axis == 'Y':
         for i in range(1, steps):  # Рисуем 5 меток
             x_pos = start_x + (axis_end_x - start_x) / steps * i
             y_pos = start_y + (axis_end_y - start_y) / steps * i
-            pygame.draw.line(screen, color, (x_pos, y_pos-10), (x_pos, y_pos + 10), 2)
+            pygame.draw.line(screen, color, (x_pos, y_pos-10),
+                             (x_pos, y_pos + 10), 2)
             draw_text((x_pos-30, y_pos), str(i), color)
     elif axis == 'Z':
         for i in range(1, steps):  # Рисуем 5 меток
             x_pos = start_x + (axis_end_x - start_x) / steps * i
             y_pos = start_y + (axis_end_y - start_y) / steps * i
-            pygame.draw.line(screen, color, (x_pos-10, y_pos), (x_pos+10, y_pos), 2)
+            pygame.draw.line(screen, color, (x_pos-10, y_pos),
+                             (x_pos+10, y_pos), 2)
             
             draw_text((x_pos, y_pos), str(i), color)
 
@@ -197,7 +205,8 @@ def draw_tree():
     N = 5
     H = 20
     R = 2
-    segments = 30  # Количество сегментов (чем больше, тем более гладким будет шар)
+    # Количество сегментов (чем больше, тем глаже будет фигура)
+    segments = 30
     for i in range(segments + 1):
         # Угол вдоль вертикальной оси (от 0 до pi)
         alpha = 2*math.pi * i / segments
@@ -205,12 +214,15 @@ def draw_tree():
             # Угол вдоль горизонтальной оси (от 0 до 2pi)
             k = K/segments/N
 
-            # Вычисляем координаты точки на сфере (сферическая координатная система)
+            # Вычисляем координаты точки на сфере
+            # (сферическая координатная система)
             x = ((k*R*N) % R) * math.sin(alpha) * scale
             y = ((k*R*N) % R) * math.cos(alpha) * scale
             z = H * k * scale
-            x, y, z = x * scale_factor[0], y * scale_factor[1], z * scale_factor[2]
-            x, y, z = x + translation[0], y + translation[1], z + translation[2]
+            x, y, z = x * scale_factor[0], y * scale_factor[1], z\
+                      * scale_factor[2]
+            x, y, z = x + translation[0], y + translation[1], z\
+                      + translation[2]
             x, y, z = rotate_x(x, y, z, rotation_angle[0])
             x, y, z = rotate_y(x, y, z, rotation_angle[1])
             x, y, z = rotate_z(x, y, z, rotation_angle[2])
@@ -224,32 +236,51 @@ def draw_tree():
                 x_next = ((k * N * R) % R) * math.sin(alpha_next) * scale
                 y_next = ((k * N * R) % R) * math.cos(alpha_next) * scale
                 z_next = H * k * scale
-                x_next, y_next, z_next = x_next * scale_factor[0], y_next * scale_factor[1], z_next * scale_factor[2]
-                x_next, y_next, z_next = x_next + translation[0], y_next + translation[1], z_next + translation[2]
-                x_next, y_next, z_next = rotate_x(x_next, y_next, z_next, rotation_angle[0])
-                x_next, y_next, z_next = rotate_y(x_next, y_next, z_next, rotation_angle[1])
-                x_next, y_next, z_next = rotate_z(x_next, y_next, z_next, rotation_angle[2])
-                x_2d_next, y_2d_next = project_to_2d_isometric(x_next, y_next, z_next)
-                pygame.draw.line(screen, white, (x_2d, y_2d), (x_2d_next, y_2d_next))
+                x_next, y_next, z_next = x_next * scale_factor[0], y_next\
+                                         * scale_factor[1], \
+                                         z_next * scale_factor[2]
+                x_next, y_next, z_next = x_next + translation[0], y_next\
+                                         + translation[1], \
+                                         z_next + translation[2]
+                x_next, y_next, z_next = rotate_x(x_next, y_next, z_next,
+                                                  rotation_angle[0])
+                x_next, y_next, z_next = rotate_y(x_next, y_next, z_next,
+                                                  rotation_angle[1])
+                x_next, y_next, z_next = rotate_z(x_next, y_next, z_next,
+                                                  rotation_angle[2])
+                x_2d_next, y_2d_next = project_to_2d_isometric(x_next,
+                                                               y_next, z_next)
+                pygame.draw.line(screen, white, (x_2d, y_2d), (x_2d_next,
+                                                               y_2d_next))
 
             if K < segments*N:
                 k = (K+1)/segments/N
                 x_next = ((k * N * R) % R) * math.sin(alpha) * scale
                 y_next = ((k * N * R) % R) * math.cos(alpha) * scale
                 z_next = H * k * scale
-                x_next, y_next, z_next = x_next * scale_factor[0], y_next * scale_factor[1], z_next * scale_factor[2]
-                x_next, y_next, z_next = x_next + translation[0], y_next + translation[1], z_next + translation[2]
-                x_next, y_next, z_next = rotate_x(x_next, y_next, z_next, rotation_angle[0])
-                x_next, y_next, z_next = rotate_y(x_next, y_next, z_next, rotation_angle[1])
-                x_next, y_next, z_next = rotate_z(x_next, y_next, z_next, rotation_angle[2])
-                x_2d_next, y_2d_next = project_to_2d_isometric(x_next, y_next, z_next)
-                pygame.draw.line(screen, white, (x_2d, y_2d), (x_2d_next, y_2d_next))
+                x_next, y_next, z_next = x_next * scale_factor[0], y_next \
+                                         * scale_factor[1], \
+                                         z_next * scale_factor[2]
+                x_next, y_next, z_next = x_next + translation[0], y_next \
+                                         + translation[1], \
+                                         z_next + translation[2]
+                x_next, y_next, z_next = rotate_x(x_next, y_next, z_next,
+                                                  rotation_angle[0])
+                x_next, y_next, z_next = rotate_y(x_next, y_next, z_next,
+                                                  rotation_angle[1])
+                x_next, y_next, z_next = rotate_z(x_next, y_next, z_next,
+                                                  rotation_angle[2])
+                x_2d_next, y_2d_next = project_to_2d_isometric(x_next,
+                                                               y_next, z_next)
+                pygame.draw.line(screen, white, (x_2d, y_2d), (x_2d_next,
+                                                               y_2d_next))
 
 
 def draw_button(text, x, y, width, height):
     pygame.draw.rect(screen, (255, 125, 125), (x, y, width, height))
     label = font.render(text, True, black)
-    screen.blit(label, (x + (width - label.get_width()) // 2, y + (height - label.get_height()) // 2))
+    screen.blit(label, (x + (width - label.get_width()) // 2, y +
+                        (height - label.get_height()) // 2))
 # Функция для проверки нажатия кнопки
 
 
@@ -261,9 +292,11 @@ def check_button_click(x, y, width, height, mouse_pos):
 running = True
 while running:
     screen.fill(black)
-    if any(event.type == pygame.MOUSEBUTTONDOWN for event in pygame.event.get()):
+    if any(event.type == pygame.MOUSEBUTTONDOWN for event
+           in pygame.event.get()):
         mouse_pos = pygame.mouse.get_pos()
-        while not any(event.type == pygame.MOUSEBUTTONUP for event in pygame.event.get()):
+        while not any(event.type == pygame.MOUSEBUTTONUP for
+                      event in pygame.event.get()):
             screen.fill(black)
             drawings()
             grid()
